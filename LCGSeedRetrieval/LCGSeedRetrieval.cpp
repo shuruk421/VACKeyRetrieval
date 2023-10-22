@@ -135,7 +135,6 @@ int main()
     int seed[100] = {0};
     *seed = 0xF03650B6;
     std::cout << "init seed: " << std::hex << *seed << std::endl;
-    //std::cout << "original seed: " << std::hex << *seed << std::endl;
     int res0 = VAClcg_orig(seed);
     std::cout << "after first run seed: " << std::hex << *seed << std::endl;
     for (int i = 0; i < 0x20; i++) {

@@ -137,6 +137,50 @@ int reverseOne(long long next) {
 	return reversed;
 }
 
+void retrieve_key(int sentVals[100]) {
+	std::map<int, int> result_index_map;
+	bool dupeIndex = false;
+
+	int seed0;
+	int seed0Index;
+	
+	for (int i = 0; i < 0x22; i++) {
+		if (dupeIndex) {
+			seed0 = sentVals[i];
+			std::cout << "seed0: " << seed0 << std::endl;
+			break;
+		}
+		int next_result_index = (sentVals[i] / 0x4000000) + 2;
+		auto it = result_index_map.find(next_result_index);
+		if (it != result_index_map.end()) {
+			// already contains index
+			seed0Index = it->second + 1;
+			// this will happen for sure because we run more times than array size
+			std::cout << "list already contains index!!!!: " << next_result_index << " i: " << seed0Index << std::endl;
+			dupeIndex = true;
+		}
+		result_index_map[next_result_index] = i + 1;
+	}
+
+	int reversed = seed0;
+	for (int j = 0; j < seed0Index + 0x1f + 40 + 1; j++)
+	{
+		reversed = reverseOne(reversed);
+		// std::cout << reversed << std::endl;
+	}
+	reversed = -reversed;
+	std::cout << "Retrieved initial seed: " << reversed << std::endl;
+
+	int retrievedSeed[100] = { 0 };
+	retrievedSeed[0] = reversed;
+	int res = VAClcg_orig(retrievedSeed);
+	for (int i = 0; i <= 2; i++) {
+		res = VAClcg_orig(retrievedSeed);
+		if (i == 1 || i == 2) { // key is 3rd and 4th random calls
+			std::cout << "retrieved key: " << std::hex << res << std::endl;
+		}
+	}
+}
 
 // https://math.stackexchange.com/questions/3846942/reversing-an-lcg
 int main()
@@ -160,50 +204,13 @@ int main()
 	std::cout << "last seed: " << std::hex << *seed << std::endl;
 
 	int sentVals[100] = { 0 };
-	// sent to server
-	std::map<int, int> result_index_map;
-	bool dupeIndex = false;
-
-	int seed0;
-	int seed0Index;
-
+	// generate sent to server
 	for (int i = 0; i < 0x22; i++) {
-		int res0 = VAClcg_orig(seed);
-		if (dupeIndex) {
-			seed0 = res0;
-			std::cout << "seed0: " << seed0 << std::endl;
-			break;
-		}
-		int next_result_index = (res0 / 0x4000000) + 2;
-		auto it = result_index_map.find(next_result_index);
-		if (it != result_index_map.end()) {
-			// already contains index
-			seed0Index = it->second + 1;
-			std::cout << "list already contains index!!!!: " << next_result_index << " i: " << seed0Index << std::endl;
-			dupeIndex = true;
-		}
-
-		result_index_map[next_result_index] = i + 1;
-		sentVals[i] = res0;
-		std::cout << "sent to server: " << std::hex << res0 << std::endl;
+		int res = VAClcg_orig(seed);
+		sentVals[i] = res;
+		std::cout << "sent to server: " << std::hex << res << std::endl;
 	}
 
-	int reversed = seed0;
-	for (int j = 0; j < seed0Index + 0x1f + 40 + 1; j++)
-	{
-		reversed = reverseOne(reversed);
-		// std::cout << reversed << std::endl;
-	}
-	reversed = -reversed;
-	std::cout << "Retrieved initial seed: " << reversed << std::endl;
-
-	int retrievedSeed[100] = { 0 };
-	retrievedSeed[0] = reversed;
-	res0 = VAClcg_orig(retrievedSeed);
-	for (int i = 0; i <= 2; i++) {
-		res0 = VAClcg_orig(retrievedSeed);
-		if (i == 1 || i == 2) { // key is 3rd and 4th random calls
-			std::cout << "retrieved key: " << std::hex << res0 << std::endl;
-		}
-	}
+	// retrive key from sentVals
+	retrieve_key(sentVals);
 }

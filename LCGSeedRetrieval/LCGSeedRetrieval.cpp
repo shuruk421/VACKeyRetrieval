@@ -73,6 +73,7 @@ long long modInverse(long long A, int M)
 }
 
 // https://math.stackexchange.com/questions/3846942/reversing-an-lcg
+// this gets the previous seed from the input seed
 int reverseOne(long long next) {
 	int modInversed = 0x53e77248; // modInverse(MULTIPLIER, MODULUS);
 	long long reversed = (next * modInversed) % MODULUS;
@@ -101,7 +102,7 @@ void retrieve_key(int sentVals[100], int ret_buff_out_size) {
 			// this means that when we do result = seed[result_index]; the returned value will be a previous seed
 			// because on the last run with the same result index: seed[result_index] = seed0;
 			// if we know on what iteration that happened (i) we can reverse the original seed using reverseOne();
-			// this will happen for sure because we run more times than array size: (actually not sure about that since VAC modules send less)
+			// this will happen for sure because we run more times than array size: (actually not sure about that since VAC modules send less, but seems to work)
 			// arrSize = 0x22 - 2 (indexes 0, 1 which aren't used as result index), we run 0x22 times.
 
 			seed0Index = it->second + 1;
@@ -114,18 +115,22 @@ void retrieve_key(int sentVals[100], int ret_buff_out_size) {
 
 	// use reverseOne to reverse the original seed
 	int reversed = seed0;
+	// this is just for calculating how many values were generated before the values sent to the server,
+	// we use this to know how many reverseOne() calls we need until we get the original seed.
 	int moduleConst = 0x422 - (ret_buff_out_size / 4) + 26;
 	for (int j = 0; j < seed0Index + 0x1f + moduleConst; j++)
 	{
 		reversed = reverseOne(reversed);
 		// std::cout << std::hex << -reversed << std::endl;
 	}
+	// on the first VAClcg() the original seed is negated so we negate it back to get the original
 	reversed = -reversed;
 	std::cout << "Retrieved initial seed: " << reversed << std::endl;
 
 	// use original seed to retrieve key, by generating it
 	int retrievedSeed[100] = { 0 };
 	retrievedSeed[0] = reversed;
+	// first call
 	int res = VAClcg_orig(retrievedSeed);
 	for (int i = 0; i <= 2; i++) {
 		res = VAClcg_orig(retrievedSeed);
@@ -133,6 +138,7 @@ void retrieve_key(int sentVals[100], int ret_buff_out_size) {
 			std::cout << "retrieved key: " << std::hex << res << std::endl;
 		}
 	}
+	// the key is char[8], we print it in two parts (could be easily converted to int64_t etc...)
 }
 
 int main()
@@ -169,7 +175,7 @@ int main()
 		{ 0x1755E699,0x6AEF761E, 0x0A2C7BE3, 0x0F33E26B, 0x7F04C3B3, 0x2B4DE1E5, 0x4127D259, 0x4B1D36A8,0x89652C7, 0x4374FDD7, 0x5B0B2623, 0x24E18B42, 0x39E67DAB, 0x5175FEB3, 0x45148B38 };
 	
 	// retrive key from sentVals
-	int ret_buff_out_size = 0xC00; // this is const for module B330ABA9, most modules use 0x1000
+	int ret_buff_out_size = 0xC00; // this is a const for module B330ABA9 (first one that runs when game is launched), most modules use 0x1000
 	retrieve_key(sentVals, ret_buff_out_size);
 
 	return 0;

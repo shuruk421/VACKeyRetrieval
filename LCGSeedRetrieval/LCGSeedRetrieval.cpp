@@ -137,7 +137,7 @@ void retrieve_key(int sentVals[100], int ret_buff_out_size) {
 
 int main()
 {
-	// simulate what the VAC module does
+	// simulate what the VAC module does (generate key from seed, and generate sentVals)
 	//int seed[100] = { 0 };
 	//*seed = 0x94079E2E; // VAC does: -std::abs(__rdtsc());
 
@@ -163,9 +163,14 @@ int main()
 	//	std::cout << "sent to server: " << std::hex << res << std::endl;
 	//}
 
+	// this is module_return_buffer[1043] until end,
+	// these are the random values than the module sends to the server for it to retrieve the encryption key.
 	int sentVals[100] =
 		{ 0x1755E699,0x6AEF761E, 0x0A2C7BE3, 0x0F33E26B, 0x7F04C3B3, 0x2B4DE1E5, 0x4127D259, 0x4B1D36A8,0x89652C7, 0x4374FDD7, 0x5B0B2623, 0x24E18B42, 0x39E67DAB, 0x5175FEB3, 0x45148B38 };
+	
 	// retrive key from sentVals
 	int ret_buff_out_size = 0xC00; // this is const for module B330ABA9, most modules use 0x1000
 	retrieve_key(sentVals, ret_buff_out_size);
+
+	return 0;
 }

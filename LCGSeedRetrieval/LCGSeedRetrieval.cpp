@@ -79,18 +79,18 @@ int reverseOne(long long next) {
 	return reversed;
 }
 
-void retrieve_key(int sentVals[100]) {
+void retrieve_key(int sentVals[100], int moduleConst) {
 	std::map<int, int> result_index_map;
 	bool dupeIndex = false;
 
 	int seed0;
 	int seed0Index;
-	
+
 	for (int i = 0; i < 0x22; i++) {
 		if (dupeIndex) {
 			// this is a dupe result, so the return value is a seed generated on a known index
 			seed0 = sentVals[i];
-			std::cout << "seed0: " << seed0 << std::endl;
+			std::cout << "seed0: " << std::hex << seed0 << std::endl;
 			break;
 		}
 
@@ -101,8 +101,8 @@ void retrieve_key(int sentVals[100]) {
 			// this means that when we do result = seed[result_index]; the returned value will be a previous seed
 			// because on the last run with the same result index: seed[result_index] = seed0;
 			// if we know on what iteration that happened (i) we can reverse the original seed using reverseOne();
-			// this will happen for sure because we run more times than array size:
-			// arrSize = 0x22 - 2 (indexeses 0, 1 which aren't used as result index), we run 0x22 times.
+			// this will happen for sure because we run more times than array size: (actually not sure about that since VAC modules send less)
+			// arrSize = 0x22 - 2 (indexes 0, 1 which aren't used as result index), we run 0x22 times.
 
 			seed0Index = it->second + 1;
 			std::cout << "list already contains index!!!!: " << next_result_index << " i: " << seed0Index << std::endl;
@@ -114,10 +114,11 @@ void retrieve_key(int sentVals[100]) {
 
 	// use reverseOne to reverse the original seed
 	int reversed = seed0;
-	for (int j = 0; j < seed0Index + 0x1f + 40 + 1; j++)
+
+	for (int j = 0; j < seed0Index + 0x1f + moduleConst; j++)
 	{
 		reversed = reverseOne(reversed);
-		// std::cout << reversed << std::endl;
+		// std::cout << std::hex << -reversed << std::endl;
 	}
 	reversed = -reversed;
 	std::cout << "Retrieved initial seed: " << reversed << std::endl;
@@ -137,31 +138,35 @@ void retrieve_key(int sentVals[100]) {
 int main()
 {
 	// simulate what the VAC module does
-	int seed[100] = { 0 };
-	*seed = 0x94079E2E; // VAC does: -std::abs(__rdtsc());
+	//int seed[100] = { 0 };
+	//*seed = 0x94079E2E; // VAC does: -std::abs(__rdtsc());
 
-	std::cout << "init seed: " << std::hex << *seed << std::endl;
-	int res0 = VAClcg_orig(seed);
-	std::cout << "after first run seed: " << std::hex << *seed << std::endl;
-	for (int i = 0; i < 0x1f; i++) {
-		res0 = VAClcg_orig(seed);
-		if (i == 1 || i == 2) { // key is 3rd and 4th random calls
-			std::cout << "key: " << std::hex << res0 << std::endl;
-		}
+	//std::cout << "init seed: " << std::hex << *seed << std::endl;
+	//int res0 = VAClcg_orig(seed);
+	//std::cout << "after first run seed: " << std::hex << *seed << std::endl;
+	//for (int i = 0; i < 0x1f; i++) {
+	//	res0 = VAClcg_orig(seed);
+	//	if (i == 1 || i == 2) { // key is 3rd and 4th random calls
+	//		std::cout << "key: " << std::hex << res0 << std::endl;
+	//	}
 
-		// std::cout << "result= " << res0 << std::endl;
-		// std::cout << "old seed prediction: " << std::hex << reverseOne(*seed) << std::endl;
-		// std::cout << "new seed:            " << std::hex << *seed << std::endl;
-	}
+	//	// std::cout << "result= " << res0 << std::endl;
+	//	// std::cout << "old seed prediction: " << std::hex << reverseOne(*seed) << std::endl;
+	//	// std::cout << "new seed:            " << std::hex << *seed << std::endl;
+	//}
 
-	int sentVals[100] = { 0 };
-	// generate sent to server
-	for (int i = 0; i < 0x22; i++) {
-		int res = VAClcg_orig(seed);
-		sentVals[i] = res;
-		std::cout << "sent to server: " << std::hex << res << std::endl;
-	}
+	//int sentVals[100] = { 0 };
+	//// generate sent to server
+	//for (int i = 0; i < 0x22; i++) {
+	//	int res = VAClcg_orig(seed);
+	//	sentVals[i] = res;
+	//	std::cout << "sent to server: " << std::hex << res << std::endl;
+	//}
 
+	int sentVals[100] =
+	{ 0x0A2C7BE3, 0x0F33E26B, 0x7F04C3B3, 0x2B4DE1E5, 0x4127D259, 0x4B1D36A8,0x89652C7, 0x4374FDD7, 0x5B0B2623, 0x24E18B42, 0x39E67DAB, 0x5175FEB3, 0x45148B38 };
 	// retrive key from sentVals
-	retrieve_key(sentVals);
+	int ret_buff_out_size = 0xC00;
+	int moduleConst = 0x422 - (ret_buff_out_size / 4) + 28; // this is const for module B330ABA9
+	retrieve_key(sentVals, moduleConst);
 }

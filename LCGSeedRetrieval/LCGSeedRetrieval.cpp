@@ -72,6 +72,7 @@ long long modInverse(long long A, int M)
 			return X;
 }
 
+// https://math.stackexchange.com/questions/3846942/reversing-an-lcg
 int reverseOne(long long next) {
 	int modInversed = 0x53e77248; // modInverse(MULTIPLIER, MODULUS);
 	long long reversed = (next * modInversed) % MODULUS;
@@ -133,9 +134,9 @@ void retrieve_key(int sentVals[100]) {
 	}
 }
 
-// https://math.stackexchange.com/questions/3846942/reversing-an-lcg
 int main()
 {
+	// simulate what the VAC module does
 	int seed[100] = { 0 };
 	*seed = 0x94079E2E; // VAC does: -std::abs(__rdtsc());
 

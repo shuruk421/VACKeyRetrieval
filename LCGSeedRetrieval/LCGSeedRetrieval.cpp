@@ -24,6 +24,7 @@ int VAClcg_orig(int seed[100])
 	seed0 = *seed;
 	if (*seed <= 0 || (seed1 = seed[1]) == 0)
 	{
+		// this is first run
 		seed0 = -seed0;
 		v4 = seed + 41;
 		if (seed0 < 1)
@@ -54,71 +55,11 @@ int VAClcg_orig(int seed[100])
 	// int test2 = (16807 * (seed0 % 127773)) - 2836 * (seed0 / 127773); // this works! (Schrage's method, avoids overflow)
 
 	int result_index = seed1 / 0x4000000 + 2; // this is based on last result
-	// std::cout << "result_index: " << result_index << " based on " << seed1 << std::endl;
-	seed[1] = seed[result_index];
+	seed[1] = seed[result_index]; // this is some previous seed, we need to find out which one
 	seed[result_index] = seed0_1;
 	result = seed[1];
 	*seed = seed0_1;
 	return result;
-
-	// want to get seed[0], got seed[1]
-	// got seed[result_index]
-	// reverse(seed[1]) = reverse(seed[result_index]) = seed0 of some iteration
-}
-
-int VAClcg(int* seed)
-{
-	int seed0; // esi
-	int seed1; // ebx
-	int* v4; // ebp
-	int i; // ebx
-	int something; // ecx
-	int after_lcg; // edx
-	int new_seed; // esi
-	int result; // eax
-
-	seed0 = seed[0];
-	if (*seed <= 0 || (seed1 = seed[1]) == 0)
-	{
-		// this is first time
-		seed0 = -seed0;
-		v4 = seed + 41;
-		if (seed0 < 1)
-			seed0 = 1;
-		for (i = 39; i >= 0; --i)
-		{
-			something = (MULTIPLIER * seed0) % MODULUS;
-			seed0 = something + 0x7FFFFFFF;
-			if (something >= 0)
-				seed0 = something;
-			if (i < 32)
-				*v4 = seed0;
-			--v4;
-		}
-		seed1 = seed[2];
-		seed[1] = seed1;
-	}
-	// not first time
-	after_lcg = (MULTIPLIER * seed0) % MODULUS;
-	new_seed = after_lcg + 0x7FFFFFFF;
-	if (after_lcg >= 0)
-		new_seed = after_lcg;
-	seed[1] = seed[seed1 / 0x4000000 + 2];
-	seed[seed1 / 0x4000000 + 2] = new_seed;
-	*seed = new_seed;
-	return seed[1];
-}
-
-int VAClcg_notfirst(int* seed) {
-	// not first time
-	int after_lcg = 16807 * seed[0] - 0x7FFFFFFF * (seed[0] / 127773);
-	int new_seed = after_lcg + 0x7FFFFFFF;
-	if (after_lcg >= 0)
-		new_seed = after_lcg;
-	seed[1] = seed[seed[1] / 0x4000000 + 2];
-	seed[seed[1] / 0x4000000 + 2] = new_seed;
-	*seed = new_seed;
-	return seed[1];
 }
 
 // A naive method to find modular
@@ -146,22 +87,31 @@ void retrieve_key(int sentVals[100]) {
 	
 	for (int i = 0; i < 0x22; i++) {
 		if (dupeIndex) {
+			// this is a dupe result, so the return value is a seed generated on a known index
 			seed0 = sentVals[i];
 			std::cout << "seed0: " << seed0 << std::endl;
 			break;
 		}
-		int next_result_index = (sentVals[i] / 0x4000000) + 2;
+
+		int next_result_index = (sentVals[i] / 0x4000000) + 2; // the result index of the next run
 		auto it = result_index_map.find(next_result_index);
 		if (it != result_index_map.end()) {
-			// already contains index
+			// already contains this result index
+			// this means that when we do result = seed[result_index]; the returned value will be a previous seed
+			// because on the last run with the same result index: seed[result_index] = seed0;
+			// if we know on what iteration that happened (i) we can reverse the original seed using reverseOne();
+			// this will happen for sure because we run more times than array size:
+			// arrSize = 0x22 - 2 (indexeses 0, 1 which aren't used as result index), we run 0x22 times.
+
 			seed0Index = it->second + 1;
-			// this will happen for sure because we run more times than array size
 			std::cout << "list already contains index!!!!: " << next_result_index << " i: " << seed0Index << std::endl;
 			dupeIndex = true;
 		}
+		// add result index to map
 		result_index_map[next_result_index] = i + 1;
 	}
 
+	// use reverseOne to reverse the original seed
 	int reversed = seed0;
 	for (int j = 0; j < seed0Index + 0x1f + 40 + 1; j++)
 	{
@@ -171,6 +121,7 @@ void retrieve_key(int sentVals[100]) {
 	reversed = -reversed;
 	std::cout << "Retrieved initial seed: " << reversed << std::endl;
 
+	// use original seed to retrieve key, by generating it
 	int retrievedSeed[100] = { 0 };
 	retrievedSeed[0] = reversed;
 	int res = VAClcg_orig(retrievedSeed);
@@ -186,7 +137,8 @@ void retrieve_key(int sentVals[100]) {
 int main()
 {
 	int seed[100] = { 0 };
-	*seed = 0x94079E2E;
+	*seed = 0x94079E2E; // VAC does: -std::abs(__rdtsc());
+
 	std::cout << "init seed: " << std::hex << *seed << std::endl;
 	int res0 = VAClcg_orig(seed);
 	std::cout << "after first run seed: " << std::hex << *seed << std::endl;
@@ -196,12 +148,10 @@ int main()
 			std::cout << "key: " << std::hex << res0 << std::endl;
 		}
 
-		std::cout << "result= " << res0 << std::endl;
+		// std::cout << "result= " << res0 << std::endl;
 		// std::cout << "old seed prediction: " << std::hex << reverseOne(*seed) << std::endl;
-		std::cout << "new seed:            " << std::hex << *seed << std::endl;
+		// std::cout << "new seed:            " << std::hex << *seed << std::endl;
 	}
-
-	std::cout << "last seed: " << std::hex << *seed << std::endl;
 
 	int sentVals[100] = { 0 };
 	// generate sent to server

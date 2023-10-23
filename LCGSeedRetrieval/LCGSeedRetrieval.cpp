@@ -79,7 +79,7 @@ int reverseOne(long long next) {
 	return reversed;
 }
 
-void retrieve_key(int sentVals[100], int moduleConst) {
+void retrieve_key(int sentVals[100], int ret_buff_out_size) {
 	std::map<int, int> result_index_map;
 	bool dupeIndex = false;
 
@@ -114,7 +114,7 @@ void retrieve_key(int sentVals[100], int moduleConst) {
 
 	// use reverseOne to reverse the original seed
 	int reversed = seed0;
-
+	int moduleConst = 0x422 - (ret_buff_out_size / 4) + 26;
 	for (int j = 0; j < seed0Index + 0x1f + moduleConst; j++)
 	{
 		reversed = reverseOne(reversed);
@@ -164,9 +164,10 @@ int main()
 	//}
 
 	int sentVals[100] =
-	{ 0x0A2C7BE3, 0x0F33E26B, 0x7F04C3B3, 0x2B4DE1E5, 0x4127D259, 0x4B1D36A8,0x89652C7, 0x4374FDD7, 0x5B0B2623, 0x24E18B42, 0x39E67DAB, 0x5175FEB3, 0x45148B38 };
+	{ 0x1755E699,
+0x6AEF761E, 0x0A2C7BE3, 0x0F33E26B, 0x7F04C3B3, 0x2B4DE1E5, 0x4127D259, 0x4B1D36A8,
+0x89652C7, 0x4374FDD7, 0x5B0B2623, 0x24E18B42, 0x39E67DAB, 0x5175FEB3, 0x45148B38 };
 	// retrive key from sentVals
-	int ret_buff_out_size = 0xC00;
-	int moduleConst = 0x422 - (ret_buff_out_size / 4) + 28; // this is const for module B330ABA9
-	retrieve_key(sentVals, moduleConst);
+	int ret_buff_out_size = 0xC00; // this is const for module B330ABA9, most modules use 0x1000
+	retrieve_key(sentVals, ret_buff_out_size);
 }

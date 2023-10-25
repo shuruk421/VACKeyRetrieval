@@ -61,7 +61,7 @@ int VAClcg_orig(int seed_arr[100])
 	}
 	// https://en.wikipedia.org/wiki/Lehmer_random_number_generator#Schrage's_method
 	// this is the same as (16807 * (long long)seed[0]) % 2147483647
-    // this avoids overflow in 16807 * seed0
+	// this avoids overflow in 16807 * seed0
 	int num = 16807 * seed_arr[0] - 0x7FFFFFFF * (seed_arr[0] / 127773);
 	seed_arr[0] = num + 0x7FFFFFFF;
 	if (num >= 0)

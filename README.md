@@ -97,7 +97,7 @@ First, let's observe that we can know the result_index value of the next iterati
 <br>
 We also have multiple generated numbers, which were generated one after another (look pseudocode above), so how could we use that?
 <br>
-If two "generation"s store in the same result_index, the second one returns the generated value of the first one, but we also know in which iteration that value was generated, because we know when the first iteration was called.
+If two "generation"s store in the same result_index (which we know how to calculate), the second one returns the generated value of the first one, but we also know in which iteration that value was generated, because we know when the first iteration was called.
 <br>
 So we have all we need to know, we have a value that we know on which iteration it was generated, we can "go back" from this value (using LCG reversal) the needed amount to get the original seed (look in retrieve_key function for better understanding).
 <br>

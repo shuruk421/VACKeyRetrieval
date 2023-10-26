@@ -12,10 +12,8 @@ The VAC module does something like this (not exactly, just pseudocode):
 int seed_arr[34] = {0};
 seed_arr[0] = __rdtsc(); // https://c9x.me/x86/html/file_module_x86_id_278.html
 int output_arr[4];
-int i = 0;
-do
+for (int i = 0; i < 0x20; i++)
     output_arr[i++] = random(seed_arr);
-while ( i < 0x20 );
 
 uint64_t ice_key = *((uint64_t *)&output_arr[2]); // ice_key is output_arr[2], output_arr[3]
 

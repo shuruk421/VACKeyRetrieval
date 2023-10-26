@@ -40,11 +40,11 @@ Let's now look at VACs "custom" LCG generator:
 ```c++
 int VAClcg_orig(int seed_arr[100])
 {
-	if (*seed <= 0 || (seed[1] = seed_arr[1]) == 0)
+	if (*seed_arr <= 0 || (seed[1] = seed_arr[1]) == 0)
 	{
 		// this is first run
 		seed_arr[0] = -seed_arr[0];
-		v4 = seed + 41;
+		v4 = seed_arr + 41;
 		if (seed_arr[0] < 1)
 			seed_arr[0] = 1;
 		for (i = 39; i >= 0; --i)
@@ -54,7 +54,7 @@ int VAClcg_orig(int seed_arr[100])
 			if (num >= 0)
 				seed_arr[0] = num;
 			if (i < 32)
-				*v4 = seed0;
+				*v4 = seed_arr[0];
 			--v4;
 		}
 		seed_arr[1] = seed_arr[2];
@@ -65,10 +65,10 @@ int VAClcg_orig(int seed_arr[100])
 	int num = 16807 * seed_arr[0] - 0x7FFFFFFF * (seed_arr[0] / 127773);
 	seed_arr[0] = num + 0x7FFFFFFF;
 	if (num >= 0)
-		seed[0] = num;
+		seed_arr[0] = num;
 
     // this is based on last result
-	int result_index = seed[1] / 0x4000000 + 2; 
+	int result_index = seed_arr[1] / 0x4000000 + 2; 
     // this is some previous seed, we need to find out which one
 	seed_arr[1] = seed_arr[result_index]; 
 	seed_arr[result_index] = seed[0];

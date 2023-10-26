@@ -19,7 +19,7 @@ while ( i < 0x20 );
 
 uint64_t ice_key = *((uint64_t *)&output_arr[2]); // ice_key is output_arr[2], output_arr[3]
 
-for (int i = 0x10; i < 0x10; ++i )
+for (int i = 0; i < 0x10; ++i )
       output_buffer[0x1000 + i] = random(seed_arr);
 ```
 What this basically means is, the module generates the Ice key using the random() function with the array seed_arr, it then proceeds to generate some more values using the same seed_arr and send the to the output buffer (which goes to server after).

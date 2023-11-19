@@ -11,7 +11,7 @@ The VAC module does something like this (not exactly, just pseudocode):
 ``` c++
 int seed_arr[34] = {0};
 seed_arr[0] = __rdtsc(); // https://c9x.me/x86/html/file_module_x86_id_278.html
-int output_arr[4];
+int output_arr[0x20];
 for (int i = 0; i < 0x20; i++)
     output_arr[i++] = random(seed_arr);
 

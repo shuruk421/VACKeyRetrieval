@@ -38,7 +38,7 @@ Let's now look at VACs "custom" LCG generator:
 ```c++
 int VAClcg_orig(int seed_arr[100])
 {
-	if (*seed_arr <= 0 || (seed[1] = seed_arr[1]) == 0)
+	if (*seed_arr <= 0 || (seed_arr[1] = seed_arr[1]) == 0)
 	{
 		// this is first run
 		seed_arr[0] = -seed_arr[0];
@@ -69,7 +69,7 @@ int VAClcg_orig(int seed_arr[100])
 	int result_index = seed_arr[1] / 0x4000000 + 2; 
     // this is some previous seed, we need to find out which one
 	seed_arr[1] = seed_arr[result_index]; 
-	seed_arr[result_index] = seed[0];
+	seed_arr[result_index] = seed_arr[0];
 	return seed_arr[1];
 }
 ```
